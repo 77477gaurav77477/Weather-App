@@ -3,6 +3,7 @@ import "./App.css";
 import WeatherCard from "./components/WeatherCard";
 import axios from "axios";
 import bglight from "./assets/images/Bg-light.avif";
+import LoadingAnimation from "./components/LoadingAnimation";
 
 function App() {
   const apiKey = import.meta.env.VITE_API_KEY;
@@ -188,198 +189,206 @@ function App() {
   };
 
   return (
-    <div
-      className={`flex flex-col justify-between items-center min-h-screen bg-blue-100 p-3 transition-all duration-500 ${
-        animationClass ? "opacity-75" : "opacity-100"
-      }`}
-      style={{
-        backgroundImage: `url(${bglight})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      }}
-    >
-      <div className="flex justify-between align-center w-9/10">
-        <form
-          className="flex flex-col justify-center align-center w-full"
-          onSubmit={handleSubmit}
+    <>
+      {animationClass ? (
+        <LoadingAnimation />
+      ) : (
+        <div
+          className={`flex flex-col justify-between items-center min-h-screen bg-blue-100 p-3 transition-all duration-500 ${
+            animationClass ? "opacity-75" : "opacity-100"
+          }`}
+          style={{
+            backgroundImage: `url(${bglight})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+          }}
         >
-          <input
-            type="text"
-            onChange={handleChange}
-            value={city}
-            placeholder="Enter City Name"
-            className="border-2 border-black rounded-md p-3 w-full text-xl m-1 mb-3"
-          />
-          <label
-            htmlFor="scale"
-            className="self-center text-md font-medium mb-2 text-black border-3 border-black p-1 rounded-md w-4/10"
-          >
-            <select
-              name="Scale"
-              id="scale"
-              className="bg-blue-100 outline-none w-12/12 cursor-pointer rounded-md"
-              onChange={handleScaleChange}
-              value={scale}
+          <div className="flex justify-between align-center w-9/10">
+            <form
+              className="flex flex-col justify-center align-center w-full"
+              onSubmit={handleSubmit}
             >
-              <option value="Celsius">Celsius</option>
-              <option value="Fahrenheit">Fahrenheit</option>
-            </select>
-          </label>
-          <button
-            className="self-center min-w-min w-3/10 bg-green-500 text-white p-2 mt-3 mb-2 text-lg rounded-md cursor-pointer hover:bg-green-600 ease-in-out duration-300 disabled:bg-gray-400"
-            type="submit"
-            disabled={animationClass}
-          >
-            {animationClass ? "Loading..." : "Get Weather"}
-          </button>
-        </form>
-      </div>
-
-      <div className="flex flex-col justify-between h-full items-start w-full border-2 border-black leading-10">
-        <div>
-          <h2 className="text-3xl font-medium mb-2">
-            {city || "Current Location"}
-          </h2>
-          <div>
-            <h3 className="text-md font-medium">
-              🌡 Temp: {avgday1 ? Math.round(avgday1.temp) : "N/A"} {symbol}
-            </h3>
+              <input
+                type="text"
+                onChange={handleChange}
+                value={city}
+                placeholder="Enter City Name"
+                className="border-2 border-black rounded-md p-3 w-full text-xl m-1 mb-3"
+              />
+              <label
+                htmlFor="scale"
+                className="self-center text-md font-medium mb-2 text-black border-3 border-black p-1 rounded-md w-4/10"
+              >
+                <select
+                  name="Scale"
+                  id="scale"
+                  className="bg-blue-100 outline-none w-12/12 cursor-pointer rounded-md"
+                  onChange={handleScaleChange}
+                  value={scale}
+                >
+                  <option value="Celsius">Celsius</option>
+                  <option value="Fahrenheit">Fahrenheit</option>
+                </select>
+              </label>
+              <button
+                className="self-center min-w-min w-3/10 bg-green-500 text-white p-2 mt-3 mb-2 text-lg rounded-md cursor-pointer hover:bg-green-600 ease-in-out duration-300 disabled:bg-gray-400"
+                type="submit"
+                disabled={animationClass}
+              >
+                {animationClass ? "Loading..." : "Get Weather"}
+              </button>
+            </form>
           </div>
-          <h3 className="text-md font-medium">
-            🤔 Feels Like: {avgday1 ? Math.round(avgday1.feelslike) : "N/A"}{" "}
-            {symbol}
-          </h3>
-          <div>
-            <h3 className="text-md font-medium">
-              💧 Humidity: {avgday1 ? Math.round(avgday1.humidity) : "N/A"}%
-            </h3>
+
+          <div className="flex flex-col justify-between h-full items-start w-full border-2 border-black leading-10">
+            <div>
+              <h2 className="text-3xl font-medium mb-2">
+                {city || "Current Location"}
+              </h2>
+              <div>
+                <h3 className="text-md font-medium">
+                  🌡 Temp: {avgday1 ? Math.round(avgday1.temp) : "N/A"} {symbol}
+                </h3>
+              </div>
+              <h3 className="text-md font-medium">
+                🤔 Feels Like: {avgday1 ? Math.round(avgday1.feelslike) : "N/A"}{" "}
+                {symbol}
+              </h3>
+              <div>
+                <h3 className="text-md font-medium">
+                  💧 Humidity: {avgday1 ? Math.round(avgday1.humidity) : "N/A"}%
+                </h3>
+              </div>
+            </div>
+
+            <div className="w-full">
+              <h1 className="text-4xl font-semibold mb-2">Hourly</h1>
+              <div className="flex overflow-x-auto scrollbar-hide space-x-4 mb-3">
+                {hdata ? (
+                  hdata.list.slice(0, 8).map((item) => (
+                    <WeatherCard
+                      key={item.dt}
+                      time={new Date(item.dt * 1000).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                      temp={Math.round(item.main.temp)}
+                      feelslike={Math.round(item.main.feels_like)}
+                      humidity={Math.round(item.main.humidity)}
+                      condition={item.weather[0].main}
+                      symbol={symbol}
+                    />
+                  ))
+                ) : (
+                  <p>Loading...</p>
+                )}
+              </div>
+            </div>
+
+            <div className="w-full">
+              <h1 className="text-4xl font-semibold mb-2">Daily</h1>
+              <div className="flex overflow-x-auto scrollbar-hide space-x-4">
+                {hdata ? (
+                  <>
+                    {avgday1 && (
+                      <WeatherCard
+                        key="day1"
+                        date="Tomorrow"
+                        temp={Math.round(avgday1.temp)}
+                        feelslike={Math.round(avgday1.feelslike)}
+                        humidity={Math.round(avgday1.humidity)}
+                        condition={avgday1.condition}
+                        symbol={symbol}
+                      />
+                    )}
+                    {avgday2 && (
+                      <WeatherCard
+                        key="day2"
+                        date="Day After"
+                        temp={Math.round(avgday2.temp)}
+                        feelslike={Math.round(avgday2.feelslike)}
+                        humidity={Math.round(avgday2.humidity)}
+                        condition={avgday2.condition}
+                        symbol={symbol}
+                      />
+                    )}
+                    {avgday3 && (
+                      <WeatherCard
+                        key="day3"
+                        date="Day 3"
+                        temp={Math.round(avgday3.temp)}
+                        feelslike={Math.round(avgday3.feelslike)}
+                        humidity={Math.round(avgday3.humidity)}
+                        condition={avgday3.condition}
+                        symbol={symbol}
+                      />
+                    )}
+                    {avgday4 && (
+                      <WeatherCard
+                        key="day4"
+                        date="Day 4"
+                        temp={Math.round(avgday4.temp)}
+                        feelslike={Math.round(avgday4.feelslike)}
+                        humidity={Math.round(avgday4.humidity)}
+                        condition={avgday4.condition}
+                        symbol={symbol}
+                      />
+                    )}
+                    {avgday5 && (
+                      <WeatherCard
+                        key="day5"
+                        date="Day 5"
+                        temp={Math.round(avgday5.temp)}
+                        feelslike={Math.round(avgday5.feelslike)}
+                        humidity={Math.round(avgday5.humidity)}
+                        condition={avgday5.condition}
+                        symbol={symbol}
+                      />
+                    )}
+                  </>
+                ) : (
+                  <p>Loading...</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap justify-between w-full border-2 border-black p-4 mt-4">
+            <div>
+              <h2 className="text-md font-medium">
+                🌅 Sunrise: {avgday1?.sunrise || "N/A"}
+              </h2>
+            </div>
+            <div>
+              <h2 className="text-md font-medium">
+                🌇 Sunset: {avgday1?.sunset || "N/A"}
+              </h2>
+            </div>
+            <div>
+              <h2 className="text-md font-medium">
+                📈 Pressure:{" "}
+                {avgday1 ? Math.round(avgday1.pressure) + " hPa" : "N/A"}
+              </h2>
+            </div>
+            <div>
+              <h2 className="text-md font-medium">
+                🌬 Wind Direction:{" "}
+                {avgday1 ? Math.round(avgday1.windDirection) + "°" : "N/A"}
+              </h2>
+            </div>
+            <div>
+              <h2 className="text-md font-medium">
+                🌫 Visibility:{" "}
+                {avgday1
+                  ? (avgday1.visibility / 1000).toFixed(1) + " km"
+                  : "N/A"}
+              </h2>
+            </div>
           </div>
         </div>
-
-        <div className="w-full">
-          <h1 className="text-4xl font-semibold mb-2">Hourly</h1>
-          <div className="flex overflow-x-auto scrollbar-hide space-x-4 mb-3">
-            {hdata ? (
-              hdata.list.slice(0, 8).map((item) => (
-                <WeatherCard
-                  key={item.dt}
-                  time={new Date(item.dt * 1000).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                  temp={Math.round(item.main.temp)}
-                  feelslike={Math.round(item.main.feels_like)}
-                  humidity={Math.round(item.main.humidity)}
-                  condition={item.weather[0].main}
-                  symbol={symbol}
-                />
-              ))
-            ) : (
-              <p>Loading...</p>
-            )}
-          </div>
-        </div>
-
-        <div className="w-full">
-          <h1 className="text-4xl font-semibold mb-2">Daily</h1>
-          <div className="flex overflow-x-auto scrollbar-hide space-x-4">
-            {hdata ? (
-              <>
-                {avgday1 && (
-                  <WeatherCard
-                    key="day1"
-                    date="Tomorrow"
-                    temp={Math.round(avgday1.temp)}
-                    feelslike={Math.round(avgday1.feelslike)}
-                    humidity={Math.round(avgday1.humidity)}
-                    condition={avgday1.condition}
-                    symbol={symbol}
-                  />
-                )}
-                {avgday2 && (
-                  <WeatherCard
-                    key="day2"
-                    date="Day After"
-                    temp={Math.round(avgday2.temp)}
-                    feelslike={Math.round(avgday2.feelslike)}
-                    humidity={Math.round(avgday2.humidity)}
-                    condition={avgday2.condition}
-                    symbol={symbol}
-                  />
-                )}
-                {avgday3 && (
-                  <WeatherCard
-                    key="day3"
-                    date="Day 3"
-                    temp={Math.round(avgday3.temp)}
-                    feelslike={Math.round(avgday3.feelslike)}
-                    humidity={Math.round(avgday3.humidity)}
-                    condition={avgday3.condition}
-                    symbol={symbol}
-                  />
-                )}
-                {avgday4 && (
-                  <WeatherCard
-                    key="day4"
-                    date="Day 4"
-                    temp={Math.round(avgday4.temp)}
-                    feelslike={Math.round(avgday4.feelslike)}
-                    humidity={Math.round(avgday4.humidity)}
-                    condition={avgday4.condition}
-                    symbol={symbol}
-                  />
-                )}
-                {avgday5 && (
-                  <WeatherCard
-                    key="day5"
-                    date="Day 5"
-                    temp={Math.round(avgday5.temp)}
-                    feelslike={Math.round(avgday5.feelslike)}
-                    humidity={Math.round(avgday5.humidity)}
-                    condition={avgday5.condition}
-                    symbol={symbol}
-                  />
-                )}
-              </>
-            ) : (
-              <p>Loading...</p>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="flex flex-wrap justify-between w-full border-2 border-black p-4 mt-4">
-        <div>
-          <h2 className="text-md font-medium">
-            🌅 Sunrise: {avgday1?.sunrise || "N/A"}
-          </h2>
-        </div>
-        <div>
-          <h2 className="text-md font-medium">
-            🌇 Sunset: {avgday1?.sunset || "N/A"}
-          </h2>
-        </div>
-        <div>
-          <h2 className="text-md font-medium">
-            📈 Pressure:{" "}
-            {avgday1 ? Math.round(avgday1.pressure) + " hPa" : "N/A"}
-          </h2>
-        </div>
-        <div>
-          <h2 className="text-md font-medium">
-            🌬 Wind Direction:{" "}
-            {avgday1 ? Math.round(avgday1.windDirection) + "°" : "N/A"}
-          </h2>
-        </div>
-        <div>
-          <h2 className="text-md font-medium">
-            🌫 Visibility:{" "}
-            {avgday1 ? (avgday1.visibility / 1000).toFixed(1) + " km" : "N/A"}
-          </h2>
-        </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 }
 
